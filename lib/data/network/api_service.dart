@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 
-class NetworkApiService {
+class ApiService {
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: "https://fakestoreapi.com/",
+    baseUrl: "https://jsonplaceholder.typicode.com/",
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
   ));
 
   Future<Response> get(String path) async {
@@ -11,13 +13,5 @@ class NetworkApiService {
 
   Future<Response> post(String path, dynamic data) async {
     return await _dio.post(path, data: data);
-  }
-
-  Future<Response> put(String path, dynamic data) async {
-    return await _dio.put(path, data: data);
-  }
-
-  Future<Response> delete(String path) async {
-    return await _dio.delete(path);
   }
 }
