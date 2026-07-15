@@ -9,90 +9,146 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authController = Get.find<AuthController>();
     final user = authController.user.value;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text("My Profile", style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.black,
-      ),
-      body: user == null
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: 220,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isDark 
+                          ? [const Color(0xFF1E1E1E), const Color(0xFF121212)]
+                          : [Colors.blue.shade900, Colors.blue.shade600],
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(50),
+                      bottomRight: Radius.circular(50),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -60,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(color: theme.scaffoldBackgroundColor, shape: BoxShape.circle),
+                    child: CircleAvatar(
+                      radius: 65,
+                      backgroundColor: isDark ? Colors.white10 : Colors.blue.shade50,
+                      child: Icon(Icons.person, size: 80, color: isDark ? Colors.white70 : Colors.blue.shade800),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 60,
+                  child: const Text(
+                    "MY PROFILE",
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 2),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 70),
+            
+            if (user != null) ...[
+              Text(user.name, style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+              Text(user.department.toUpperCase(), 
+                style: TextStyle(color: isDark ? Colors.blue.shade300 : Colors.blue.shade800, fontWeight: FontWeight.w600, letterSpacing: 1, fontSize: 13)),
+              
+              const SizedBox(height: 30),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Column(
+                  children: [
+                    _profileInfoCard(context, Icons.badge_outlined, "Employee ID", "#${user.id}"),
+                    const SizedBox(height: 15),
+                    _profileInfoCard(context, Icons.email_outlined, "Official Email", user.email),
+                    const SizedBox(height: 15),
+                    _profileInfoCard(context, Icons.phone_outlined, "Phone Number", user.mobile),
+                    const SizedBox(height: 15),
+                    _profileInfoCard(context, Icons.location_city_outlined, "Company", user.companyName),
+                  ],
+                ),
+              ),
+            ],
+            
+            const SizedBox(height: 30),
+            
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: Row(
                 children: [
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 65,
-                          backgroundColor: Colors.blue.shade100,
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundColor: Colors.blue.shade700,
-                            child: const Icon(Icons.person, size: 70, color: Colors.white),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
-                            child: const Icon(Icons.check, color: Colors.white, size: 20),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Text(user.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  Text(user.companyName, style: TextStyle(fontSize: 14, color: Colors.blue.shade700, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 30),
-                  
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildProfileTile(Icons.email_outlined, "Email Address", user.email),
-                          _divider(),
-                          _buildProfileTile(Icons.phone_outlined, "Mobile Number", user.mobile),
-                          _divider(),
-                          _buildProfileTile(Icons.apartment_outlined, "Department", user.department),
-                          _divider(),
-                          _buildProfileTile(Icons.badge_outlined, "Employee ID", "#${user.id}"),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  _actionTile(context, Icons.edit_note, "Edit Bio", Colors.blue),
+                  const SizedBox(width: 15),
+                  _actionTile(context, Icons.verified_user_outlined, "Documents", Colors.green),
                 ],
               ),
             ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _divider() => Divider(height: 1, indent: 60, color: Colors.grey.shade100);
-
-  Widget _buildProfileTile(IconData icon, String label, String value) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(10)),
-        child: Icon(icon, color: Colors.blue.shade700, size: 22),
+  Widget _profileInfoCard(BuildContext context, IconData icon, String label, String value) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade100),
       ),
-      title: Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      subtitle: Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: Colors.blue.withOpacity(0.05), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: isDark ? Colors.blue.shade300 : Colors.blue.shade800, size: 22),
+          ),
+          const SizedBox(width: 15),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 12)),
+              Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: theme.colorScheme.onSurface)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionTile(BuildContext context, IconData icon, String label, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.1)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(height: 8),
+            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
     );
   }
 }

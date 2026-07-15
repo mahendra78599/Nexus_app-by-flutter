@@ -6,7 +6,7 @@ import 'package:nexus_app/data/repository/attendance_repository.dart';
 import 'package:flutter/material.dart';
 
 class AttendanceController extends GetxController {
-  final repo = AttendanceRepository();
+  final repo = AttendanceRepository(); 
 
   var currentTime = "".obs;
   var currentDate = "".obs;
@@ -61,8 +61,8 @@ class AttendanceController extends GetxController {
       Position position = await Geolocator.getCurrentPosition();
       
       // Office Location (Mock: Bangalore center)
-      double officeLat = 12.9716;
-      double officeLong = 77.5946;
+      double officeLat = 23.02799602620507;
+      double officeLong =  72.55727109830109;
       
       double distanceInMeters = Geolocator.distanceBetween(
         position.latitude, position.longitude, officeLat, officeLong

@@ -8,101 +8,163 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Get.put(ThemeController());
+    final themeController = Get.find<ThemeController>();
     final authController = Get.find<AuthController>();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Settings", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text("Preferences", 
+          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, color: isDark ? Colors.white : Colors.blue.shade900)),
         centerTitle: true,
+        backgroundColor: theme.cardColor,
+        foregroundColor: isDark ? Colors.white : Colors.blue.shade900,
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          _sectionTitle("App Preferences"),
-          _buildSettingsCard([
-            Obx(() => _settingTile(
-              Icons.dark_mode_outlined, 
-              "Dark Mode", 
-              "Switch between light and dark themes",
-              trailing: Switch(
-                value: themeController.isDarkMode.value,
-                onChanged: (value) => themeController.toggleTheme(),
-                activeColor: Colors.blue.shade700,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(25),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("APP SETTINGS", 
+              style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontWeight: FontWeight.bold, letterSpacing: 1, fontSize: 12)),
+            const SizedBox(height: 15),
+            
+            _settingsCard(context, [
+              Obx(() => _settingsTile(
+                context,
+                Icons.dark_mode_rounded, 
+                "Dark Appearance", 
+                "Reduce eye strain in low light",
+                trailing: Switch.adaptive(
+                  value: themeController.isDarkMode.value,
+                  onChanged: (v) => themeController.toggleTheme(),
+                  activeColor: Colors.blue.shade800,
+                ),
+              )),
+              _divider(context),
+              _settingsTile(context, Icons.language_rounded, "App Language", "Choose your native language"),
+              _divider(context),
+              _settingsTile(context, Icons.notifications_active_rounded, "Push Notifications", "Reminders for check-in/out"),
+            ]),
+            
+            const SizedBox(height: 30),
+            Text("SECURITY & PRIVACY", 
+              style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontWeight: FontWeight.bold, letterSpacing: 1, fontSize: 12)),
+            const SizedBox(height: 15),
+            
+            _settingsCard(context, [
+              _settingsTile(context, Icons.fingerprint_rounded, "Biometric Lock", "Use FaceID or Fingerprint"),
+              _divider(context),
+              _settingsTile(context, Icons.security_rounded, "Privacy Policy", "How we manage your data"),
+            ]),
+            
+            const SizedBox(height: 40),
+            
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton.icon(
+                onPressed: () => _showLogoutDialog(context, authController),
+                icon: const Icon(Icons.logout_rounded),
+                label: const Text("SIGN OUT ACCOUNT", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.red.withOpacity(0.1) : Colors.red.shade50,
+                  foregroundColor: Colors.red.shade700,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(color: Colors.red.withOpacity(0.2)),
+                  ),
+                ),
               ),
-            )),
-            _divider(),
-            _settingTile(
-              Icons.language_outlined, 
-              "Language", 
-              "Select your preferred language",
-              onTap: () => Get.snackbar("Info", "Multiple languages coming soon"),
             ),
-          ]),
-          
-          const SizedBox(height: 25),
-          _sectionTitle("Support"),
-          _buildSettingsCard([
-            _settingTile(Icons.help_outline, "Help Center", "Get support and FAQ"),
-            _divider(),
-            _settingTile(Icons.info_outline, "About App", "Version 1.0.0"),
-          ]),
-          
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            height: 55,
-            child: OutlinedButton.icon(
-              onPressed: () => _showLogoutDialog(authController),
-              icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text("LOGOUT", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.red),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+            
+            const SizedBox(height: 20),
+            Center(
+              child: Text("Nexus HR v1.0.4", style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 12)),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  void _showLogoutDialog(AuthController controller) {
-    Get.defaultDialog(
-      title: "Logout",
-      middleText: "Are you sure you want to logout?",
-      textConfirm: "Yes, Logout",
-      textCancel: "Cancel",
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
-      onConfirm: () => controller.logout(),
+  void _showLogoutDialog(BuildContext context, AuthController controller) {
+    final theme = Theme.of(context);
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(30),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
+            const SizedBox(height: 25),
+            Text("Sign Out?", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+            const SizedBox(height: 10),
+            Text("Are you sure you want to exit the session?", style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
+            const SizedBox(height: 30),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Get.back(),
+                    child: const Text("Cancel"),
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => controller.logout(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                    child: const Text("Sign Out"),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _sectionTitle(String title) => Padding(
-    padding: const EdgeInsets.only(left: 5, bottom: 10),
-    child: Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue.shade800)),
-  );
+  Widget _settingsCard(BuildContext context, List<Widget> children) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.2 : 0.02), blurRadius: 10)],
+      ),
+      child: Column(children: children),
+    );
+  }
 
-  Widget _buildSettingsCard(List<Widget> children) => Card(
-    elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: Colors.grey.shade200)),
-    child: Column(children: children),
-  );
+  Widget _divider(BuildContext context) => Divider(height: 1, indent: 60, color: Theme.of(context).dividerColor.withOpacity(0.1));
 
-  Widget _divider() => Divider(height: 1, indent: 55, color: Colors.grey.shade100);
-
-  Widget _settingTile(IconData icon, String title, String subtitle, {Widget? trailing, VoidCallback? onTap}) {
+  Widget _settingsTile(BuildContext context, IconData icon, String title, String subtitle, {Widget? trailing}) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return ListTile(
-      onTap: onTap,
-      leading: Icon(icon, color: Colors.blue.shade700),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      trailing: trailing ?? const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(color: Colors.blue.withOpacity(0.05), borderRadius: BorderRadius.circular(12)),
+        child: Icon(icon, color: isDark ? Colors.blue.shade300 : Colors.blue.shade900),
+      ),
+      title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: theme.colorScheme.onSurface)),
+      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
+      trailing: trailing ?? Icon(Icons.arrow_forward_ios_rounded, size: 14, color: theme.textTheme.bodyMedium?.color),
     );
   }
 }
